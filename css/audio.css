@@ -1,0 +1,597 @@
+body {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+html,
+body {
+    height: 100%;
+    background-size: cover;
+    backdrop-filter: blur(50px);
+    overflow: hidden;
+}
+
+.upper-container {
+    width: 80%;
+    padding-left: 10%;
+    height: 80%;
+}
+
+/* 实现唱片效果 */
+.record-container {
+    width: 50%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    float: left;
+}
+
+.record-bg {
+    background-color: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 500px;
+    height: 500px;
+    border-radius: 500px;
+}
+
+#record-img {
+    background-image: url("../img/record1.jpg");
+    background-size: 100% 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 250px;
+    height: 250px;
+    border-radius: 250px;
+}
+
+.record-center {
+    background-color: black;
+    width: 20px;
+    height: 20px;
+    border-radius: 20px;
+}
+
+.introduction-container {
+    width: 50%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    float: left;
+}
+
+.text-container {
+    width: 80%;
+    padding-left: 20%;
+}
+
+#music-title {
+    color: rgba(255, 255, 255, 0.888);
+    font-size: 4rem;
+    line-height: 6rem;
+}
+
+.author-container {
+    color: rgb(171, 171, 171);
+    font-size: medium;
+}
+
+.audio {
+    width: 100%;
+}
+
+/* 播放器样式设置*/
+.audio-box {
+    width: 100%;
+    height: 20%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.audio-container {
+    width: 90%;
+}
+
+/* ========== 进度条样式 - 渐变色流动效果 ========== */
+.a-progress {
+    width: 100%;
+    color: #42b680;
+    background-color: transparent;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+
+/* 进度条总容器 */
+.pgs-total {
+    width: 100%;
+    height: 16px;
+    background-color: transparent;
+    border-radius: 10px;
+    position: relative;
+    cursor: pointer;
+}
+
+/* 1. 未播放区域：从深到浅的渐变背景 */
+.pgs-total::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 7px;
+    bottom: 7px;
+    background: linear-gradient(90deg, 
+        rgba(255, 255, 255, 0.05) 0%,
+        rgba(255, 255, 255, 0.15) 50%,
+        rgba(255, 255, 255, 0.05) 100%);
+    border-radius: 10px;
+    z-index: 0;
+}
+
+/* 2. 已播放区域：彩色流动渐变 */
+.pgs-play {
+    height: 100%;
+    position: relative;
+    border-radius: 10px;
+}
+
+.pgs-play::before {
+    content: '';
+    position: absolute;
+    top: 7px;
+    bottom: 7px;
+    left: 0;
+    right: 0;
+    background: linear-gradient(90deg, 
+        #42b680 0%,
+        #5ae0a0 25%,
+        #52d393 50%,
+        #5ae0a0 75%,
+        #42b680 100%);
+    background-size: 200% 100%;
+    border-radius: 10px;
+    z-index: 2;
+    width: 100%;
+    transition: width 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.2),
+        0 0 10px rgba(66, 182, 128, 0.3);
+}
+
+/* 3. 播放时的流动效果 - 直接在.pgs-play元素上应用 */
+.pgs-play.playing::before {
+    animation: colorFlow 3s infinite linear;
+}
+
+/* 流动动画 */
+@keyframes colorFlow {
+    0% { 
+        background-position: 0% 0%; 
+        box-shadow: 0 0 12px rgba(66, 182, 128, 0.4);
+    }
+    50% { 
+        background-position: 100% 0%; 
+        box-shadow: 0 0 16px rgba(90, 224, 160, 0.6);
+    }
+    100% { 
+        background-position: 200% 0%; 
+        box-shadow: 0 0 12px rgba(66, 182, 128, 0.4);
+    }
+}
+
+/* 4. 圆形指示器 */
+.progress-indicator {
+    position: absolute;
+    top: 50%;
+    left: 0%;
+    transform: translate(-50%, -50%) scale(0);
+    width: 14px;
+    height: 14px;
+    background: white;
+    border: 3px solid #5ae0a0;
+    border-radius: 50%;
+    opacity: 0;
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 3;
+    cursor: pointer;
+    pointer-events: none;
+    box-shadow: 0 0 8px rgba(90, 224, 160, 0.5);
+}
+
+/* 悬停时显示圆形指示器 */
+.pgs-total:hover .progress-indicator {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+}
+
+/* 播放时圆形指示器自动显示 */
+.pgs-total.playing .progress-indicator {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+    border-color: #72f8b8;
+    box-shadow: 0 0 12px rgba(114, 248, 184, 0.7);
+}
+
+/* 5. 拖动时效果 - 直接在.pgs-play元素上应用 */
+.pgs-play.dragging::before {
+    background: linear-gradient(90deg, 
+        #5ae0a0 0%,
+        #72f8b8 25%,
+        #6aebb0 50%,
+        #72f8b8 75%,
+        #5ae0a0 100%);
+    box-shadow: 
+        inset 0 1px 0 rgba(255, 255, 255, 0.4),
+        0 0 20px rgba(90, 224, 160, 0.8);
+    animation: colorFlow 1.5s infinite linear;
+}
+
+.pgs-total.dragging .progress-indicator {
+    transform: translate(-50%, -50%) scale(1.3);
+    opacity: 1;
+    background: #5ae0a0;
+    border-color: white;
+    box-shadow: 0 0 20px rgba(90, 224, 160, 0.9);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .progress-indicator {
+        width: 12px;
+        height: 12px;
+        border-width: 2px;
+    }
+}
+
+/* ========== 下排控制按钮样式 ========== */
+.a-controls {
+    width: 100%;
+}
+
+/* 时间样式 */
+.time-container {
+    width: 30%;
+    float: left;
+    color: white;
+    font-weight: 300;
+    line-height: 50px;
+}
+
+.played-time {
+    left: 15px;
+    text-align: left;
+}
+
+.audio-time {
+    right: 15px;
+    text-align: right;
+}
+
+/* 中间部分按钮 */
+.center-button-container {
+    width: 40%;
+    float: left;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.center-icon {
+    float: left;
+    width: 30px;
+    height: 30px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.center-icon:hover {
+    opacity: 0.7;
+}
+
+.center-icon:active {
+    opacity: 0.6;
+}
+
+.mode {
+    background-image: url("../img/mode1.png");
+    background-size: 100% 100%;
+}
+
+.s-left {
+    background-image: url("../img/下一首.png");
+    background-size: 100% 100%;
+}
+
+.icon-play {
+    float: left;
+    width: 50px;
+    height: 50px;
+    background-image: url("../img/继续播放.png");
+    background-size: 100% 100%;
+}
+
+.icon-pause {
+    float: left;
+    width: 50px;
+    height: 50px;
+    background-image: url("../img/暂停.png");
+    background-size: 100% 100%;
+}
+
+.s-right {
+    background-image: url("../img/上一首.png");
+    background-size: 100% 100%;
+}
+
+.volume {
+    background-image: url("../img/音量.png");
+    background-size: 100% 100%;
+}
+
+/* 尾部按钮 */
+.bottom-button-container {
+    width: 30%;
+    padding-top: 10px;
+    float: left;
+    text-align: right;
+}
+
+.bottom-icon {
+    float: right;
+    width: 20px;
+    height: 20px;
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.bottom-icon:hover {
+    opacity: 0.7;
+}
+
+.bottom-icon:active {
+    opacity: 0.6;
+}
+
+.MV {
+    background-image: url("../img/MV.png");
+    background-size: 100% 100%;
+}
+
+.speed {
+    margin-left: 10px;
+    margin-right: 10px;
+    float: right;
+    font-weight: 300;
+    color: white;
+}
+
+.speed:hover {
+    opacity: 0.7;
+    cursor: default;
+}
+
+.speed:active {
+    opacity: 0.6;
+    cursor: default;
+}
+
+.list {
+    background-image: url("../img/列表.png");
+    background-size: 100% 100%;
+}
+
+/* 音乐列表 */
+.close-list {
+    display: none;
+    position: fixed;
+    height: 100%;
+    left: 0;
+    top: 0;
+    width: 75%;
+}
+
+.music-list {
+    display: none;
+    position: fixed;
+    height: 100%;
+    right: 0;
+    top: 0;
+    width: 25%;
+    background-color: rgb(29, 40, 32);
+}
+
+.music-list-container {
+    width: 100%;
+}
+
+.music-list-title {
+    color: white;
+    font-size: 2rem;
+    font-weight: 300;
+    padding: 10% 15% 0% 15%;
+}
+
+.line {
+    height: 1px;
+    width: 70%;
+    border: none;
+    border-top: 1px dashed #4d806b;
+}
+
+.all-list div {
+    height: 50px;
+    line-height: 50px;
+    color: white;
+    font-weight: 300;
+    padding: 0% 15% 0% 15%;
+}
+
+.all-list div:hover {
+    background-color: rgb(27, 37, 30);
+    cursor: default;
+}
+
+.list-card-show {
+    animation: showAni;
+    animation-duration: 1s;
+    animation-fill-mode: forwards;
+    -webkit-animation-fill-mode: forwards;
+}
+
+.list-card-hide {
+    animation: hideAni;
+    animation-duration: 1s;
+    animation-fill-mode: forwards;
+    -webkit-animation-fill-mode: forwards;
+}
+
+.rotate-play {
+    animation: rotateAni 10s infinite linear;
+    animation-play-state: paused;
+    animation-fill-mode: forwards;
+    -webkit-animation-fill-mode: forwards;
+}
+
+@keyframes hideAni {
+    from {
+        transform: translateX(0%);
+    }
+    to {
+        transform: translateX(100%);
+    }
+}
+
+@keyframes showAni {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(0%);
+    }
+}
+
+@keyframes rotateAni {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 横条样式 */
+#volumn-togger {
+    width: 100px;
+    height: 2px;
+    appearance: none;
+    background-color: #dcdcdc;
+    outline: none;
+    overflow: hidden;
+    border-radius: 15px;
+    box-shadow: inset 0 0 5px rgb(91, 91, 91);
+}
+
+/* 拖动块的样式 */
+#volumn-togger::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 1px;
+    height: 5px;
+    border-radius: 50%;
+    background: #42b680;
+    cursor: pointer;
+    border: 4px solid #33333300;
+    box-shadow: -407px 0 0 400px #42b680;
+}
+
+/* ========== 学生信息栏样式（右上角） ========== */
+.student-info-bar {
+    position: fixed;
+    top: 1px;
+    right: 1px;
+    z-index: 1000;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 10px;
+    padding: 10px 18px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.info-content {
+    color: rgba(255, 255, 255, 0.95);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    font-size: 16px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+}
+
+.info-content span {
+    opacity: 0.95;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.separator {
+    margin: 0 12px;
+    opacity: 0.3;
+    font-weight: 300;
+}
+
+/* 悬停效果 */
+.student-info-bar:hover {
+    background: rgba(0, 0, 0, 0.85);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.35);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .student-info-bar {
+        top: 15px;
+        right: 15px;
+        padding: 8px 14px;
+    }
+    
+    .info-content {
+        font-size: 13px;
+    }
+    
+    .separator {
+        margin: 0 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .student-info-bar {
+        top: 10px;
+        right: 10px;
+        padding: 6px 10px;
+        border-radius: 8px;
+    }
+    
+    .info-content {
+        font-size: 11px;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+    
+    .separator {
+        display: none;
+    }
+    
+    .info-content span {
+        line-height: 1.4;
+    }
+}
